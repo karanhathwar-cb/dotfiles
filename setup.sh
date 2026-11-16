@@ -11,11 +11,14 @@ MARKER="# Dotfiles zsh aliases"
 say() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m!!\033[0m %s\n' "$*"; }
 
+FORMULAE=(zsh-autosuggestions starship chafa zellij nvm)
+CASKS=(font-jetbrains-mono-nerd-font)
+
 # --- 1. Homebrew packages the configs rely on ---
 if [ "${SKIP_BREW:-0}" != "1" ]; then
   if command -v brew >/dev/null 2>&1; then
     say "Checking Homebrew packages"
-    for pkg in zsh-autosuggestions starship chafa coreutils zellij nvm; do
+    for pkg in "${FORMULAE[@]}"; do
       if brew list --formula "$pkg" >/dev/null 2>&1; then
         echo "  ok       $pkg"
       else
@@ -23,7 +26,7 @@ if [ "${SKIP_BREW:-0}" != "1" ]; then
         brew install "$pkg"
       fi
     done
-    for cask in font-jetbrains-mono-nerd-font; do
+    for cask in "${CASKS[@]}"; do
       if brew list --cask "$cask" >/dev/null 2>&1; then
         echo "  ok       $cask"
       else
@@ -31,15 +34,23 @@ if [ "${SKIP_BREW:-0}" != "1" ]; then
         brew install --cask "$cask"
       fi
     done
+
+    # Provenance check on everything installed, dependencies included (SKIP_AUDIT=1 to skip)
+    if [ "${SKIP_AUDIT:-0}" != "1" ]; then
+      say "Auditing installed packages"
+      "$DOTFILES/audit.sh" "${FORMULAE[@]}" --cask "${CASKS[@]}" \
+        || warn "Audit found issues or could not finish - read $DOTFILES/audit-report.txt"
+    fi
   else
-    warn "Homebrew not found - skipping package installs (zsh-autosuggestions, starship, chafa, coreutils, zellij, nvm, JetBrainsMono Nerd Font)"
+    warn "Homebrew not found - skipping package installs (${FORMULAE[*]} ${CASKS[*]})"
   fi
 fi
 
 # --- 2. Hook the zsh files into ~/.zshrc ---
 say "Configuring $ZSHRC"
 touch "$ZSHRC"
-if grep -qF "zsh/*.zsh(N)" "$ZSHRC"; then
+# Match the loader for this checkout, also when written by hand as ~/...
+if grep -qF -e "$DOTFILES\"/zsh/" -e "$DOTFILES/zsh/" -e "~${DOTFILES#"$HOME"}/zsh/" "$ZSHRC"; then
   echo "  already hooked up, nothing to do"
 else
   {
@@ -50,12 +61,15 @@ else
   echo "  added loader for $DOTFILES/zsh/*.zsh"
 fi
 
-# --- 3. Symlink app configs into ~/.config (existing files are backed up) ---
+# --- 3. Folders the configs expect (Terraform will not create its cache dir) ---
+mkdir -p "$HOME/.terraform.d/plugin-cache"
+
+# --- 4. Symlink app configs into ~/.config (existing files are backed up) ---
 link() {
   local src="$1" dst="$2"
   [ -e "$src" ] || return 0
   mkdir -p "$(dirname "$dst")"
-  if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
+  if [ -L "$dst" ] && [ "$dst" -ef "$src" ]; then
     echo "  ok       $dst"
     return 0
   fi

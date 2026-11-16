@@ -52,7 +52,7 @@ Say 'Configuring PowerShell profiles'
 foreach ($p in $profiles) {
   New-Item -ItemType Directory -Force -Path (Split-Path $p) | Out-Null
   if (-not (Test-Path $p)) { New-Item -ItemType File -Path $p | Out-Null }
-  if (Select-String -Path $p -SimpleMatch 'powershell\*.ps1' -Quiet) {
+  if (Select-String -Path $p -SimpleMatch "$Dotfiles\powershell\*.ps1" -Quiet) {
     Write-Host "  already hooked up: $p"
   } else {
     Add-Content -Path $p -Value "`n# Dotfiles PowerShell setup`n$loader"
@@ -60,7 +60,10 @@ foreach ($p in $profiles) {
   }
 }
 
-# --- 4. Link app configs (existing files are backed up) ---
+# --- 4. Folders the configs expect (Terraform will not create its cache dir) ---
+New-Item -ItemType Directory -Force -Path "$env:APPDATA\terraform.d\plugin-cache" | Out-Null
+
+# --- 5. Link app configs (existing files are backed up) ---
 function Link($src, $dst) {
   if (-not (Test-Path $src)) { return }
   New-Item -ItemType Directory -Force -Path (Split-Path $dst) | Out-Null

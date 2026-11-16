@@ -22,9 +22,8 @@ if (Get-Command chafa -ErrorAction SilentlyContinue) {
 }
 
 # --- PATH / env ---
-$env:PATH += ";$HOME\go\bin"
-$env:TF_PLUGIN_CACHE_DIR = "$env:APPDATA\terraform.d\plugin-cache"
-New-Item -ItemType Directory -Force -Path $env:TF_PLUGIN_CACHE_DIR | Out-Null
+if ($env:PATH -notlike "*$HOME\go\bin*") { $env:PATH += ";$HOME\go\bin" }
+$env:TF_PLUGIN_CACHE_DIR = "$env:APPDATA\terraform.d\plugin-cache"   # created by setup.ps1
 
 # --- Shortcuts ---
 # Open Claude Code in the dotfiles repo to edit these configs
