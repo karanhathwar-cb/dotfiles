@@ -23,8 +23,16 @@ if [ "${SKIP_BREW:-0}" != "1" ]; then
         brew install "$pkg"
       fi
     done
+    for cask in font-jetbrains-mono-nerd-font; do
+      if brew list --cask "$cask" >/dev/null 2>&1; then
+        echo "  ok       $cask"
+      else
+        echo "  install  $cask"
+        brew install --cask "$cask"
+      fi
+    done
   else
-    warn "Homebrew not found - skipping package installs (zsh-autosuggestions, starship, chafa, coreutils, zellij, nvm)"
+    warn "Homebrew not found - skipping package installs (zsh-autosuggestions, starship, chafa, coreutils, zellij, nvm, JetBrainsMono Nerd Font)"
   fi
 fi
 
