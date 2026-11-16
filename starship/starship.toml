@@ -1,0 +1,50 @@
+format = """
+$directory\
+$git_branch\
+$git_commit\
+$fill\
+$aws\
+$cmd_duration\
+$line_break\
+${custom.venv}\
+$character"""
+
+palette = 'kanagawa'
+
+[directory]
+style = 'bold fg:dark_blue'
+format = '[$path ]($style)'
+truncation_length = 3
+truncation_symbol = '…/'
+truncate_to_repo = false
+
+[fill]
+symbol = ' '
+
+[palettes.kanagawa]
+dark_blue='#0060af'
+light_blue='#87afd7'
+cream='#ffffd7'
+dust='#ffd68e'
+
+[git_branch]
+symbol = ''
+style = 'fg:light_blue'
+format = '[on](white) [$symbol $branch ]($style)'
+
+[git_commit]
+style = 'fg:cream'
+format = '[at](white) [󰜘$hash ]($style)'
+only_detached = false
+
+[custom.venv]
+description = 'Show active Python virtualenv name'
+command = 'basename "$VIRTUAL_ENV"'
+when = 'test -n "$VIRTUAL_ENV"'
+format = '[\($output\) ]($style)'
+style = 'fg:light_blue'
+
+[aws]
+format = 'on [$symbol $profile]($style) '
+style = 'fg:dust'
+symbol = ' '
